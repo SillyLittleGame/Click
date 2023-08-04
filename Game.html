@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  #play-area {
+    width: 800px;
+    height: 500px;
+    border: 1px solid black;
+    position: relative;
+  }
+  
+  .circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: red;
+    position: absolute;
+    cursor: pointer;
+  }
+  
+  #start-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+  }
+  
+  #counter {
+    margin-top: 10px;
+    font-size: 20px;
+  }
+  
+  #timer {
+    margin-top: 10px;
+    font-size: 20px;
+  }
+
+  #times {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 16px;
+  }
+</style>
+</head>
+<body>
+  <button id="start-button">Start Game</button>
+  <div id="play-area">
+    <span id="counter">Circles Clicked: 0</span>
+    <span id="timer">Time: 0.00 seconds</span>
+    <div id="times"></div>
+  </div>
+
+<script>
+  let circleCount = 0;
+  let startTime;
+  let interval;
+  let checkpointInterval;
+  let times = {};
+
+  document.getElementById("start-button").addEventListener("click", startGame);
+
+  function startGame() {
+    circleCount = 0;
+    startTime = Date.now();
+    updateTimer();
+
+    interval = setInterval(updateTimer, 10); // Update every 10 milliseconds for hundredths of a second
+
+    document.getElementById("play-area").addEventListener("click", handleClick);
+    createCircle();
+    createCircle(); // Start with 2 circles
+  }
+
+  function createCircle() {
+    const circle = document.createElement("div");
+    circle.className = "circle";
+    const x = Math.floor(Math.random() * 750); // Random x coordinate (within play area width)
+    const y = Math.floor(Math.random() * 450); // Random y coordinate (within play area height)
+    circle.style.left = x + "px";
+    circle.style.top = y + "px";
+    document.getElementById("play-area").appendChild(circle);
+  }
+
+  function updateTimer() {
+    const currentTime = (Date.now() - startTime) / 1000;
+    document.getElementById("timer").textContent = `Time: ${currentTime.toFixed(2)} seconds`;
+  }
+
+  function updateTimesDisplay() {
+    const timesDisplay = document.getElementById("times");
+    timesDisplay.innerHTML = "<strong>Times:</strong><br>";
+
+    for (const count in times) {
+      timesDisplay.innerHTML += `${count} circles: ${times[count]} seconds<br>`;
+    }
+  }
+
+  function handleClick(event) {
+    if (event.target.classList.contains("circle")) {
+      event.target.remove();
+      circleCount++;
+      document.getElementById("counter").textContent = `Circles Clicked: ${circleCount}`;
+      
+      // Double the number of circles on every click
+      const currentCircles = document.getElementsByClassName("circle").length;
+      const circlesToAdd = currentCircles > 0 ? currentCircles : 1;
+      for (let i = 0; i < circlesToAdd; i++) {
+        createCircle();
+      }
+    }
+
+    if (circleCount === 10 || circleCount === 25 || circleCount === 50 || circleCount === 100) {
+      clearInterval(checkpointInterval);
+      times[circleCount] = ((Date.now() - startTime) / 1000).toFixed(2);
+      updateTimesDisplay();
+    }
+
+    if (circleCount === 100) {
+      clearInterval(interval);
+      alert("Congratulations! You've reached 100 circles and won the game!");
+    }
+  }
+</script>
+</body>
+</html>
